@@ -151,7 +151,12 @@ function handleLogin(e) {
     
     if (usernameField.value === "admin" && passwordField.value === currentpassword) {
         localStorage.setItem("successMessage", "Successfully logged in as Admin!");
-        window.location.href = "./index.html";
+        // Show admin panel if it exists on this page, otherwise redirect
+        if (document.getElementById('admin-panel')) {
+            initAdminPanel();
+        } else {
+            window.location.href = "./index.html";
+        }
     } else {
         showMessage("Invalid username or password!", "error");
         usernameField.value = "";
