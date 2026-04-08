@@ -90,17 +90,18 @@
     border: none;
     outline: none;
     border-radius: 4px;
-    background: lightgreen ;
-    color: white;
+    background: rgb(50, 192, 50) ;
+    color: black;
 }
 
 .button:hover {
     background: green;
+    color: white;
     transition: all 0.3s ease;
 }
 
 .navbar__links:hover {
-    color: lightgreen;
+    color: rgb(45, 245, 45);
     transition: all 0.3s ease;
 }
 
@@ -240,7 +241,7 @@
 }
 
 .main__content h2 {
-    font-size: 4rem;
+    font-size: 3.5rem;
     background-color: antiquewhite;
     background-image: linear-gradient(to top, orange 0%, #ffd7b5 100%);
     background-size: 100%;
@@ -316,7 +317,10 @@
         justify-self: center;
         width: 100%;
         margin: 0 auto;
-        height: 90vh;
+    }
+
+    .main {
+        height: 110vh;
     }
 
     .main__content {
@@ -330,28 +334,31 @@
     }
 
     .main__content h2 {
-        font-size: 3rem;
+        font-size: 2rem;
     }
 
     .main__content p {
         margin-top: 1rem;
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 }
 
 @media screen and (max-width: 480px) {
+    .main__container {
+        padding-top: 0.5rem;
+    }
     .main__content h1 {
-        font-size: 2rem;
+        font-size: 1.5rem;
         margin-top: 3rem;
     }
 
     .main__content h2 {
-        font-size: 2rem;
+        font-size: 1.3rem;
     }
 
     .main__content p {
         margin-top: 2rem;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
     }
 
     .main__btn {
@@ -484,10 +491,6 @@
         font-size: clamp(1.8rem, 6vw, 2.5rem);
         margin-top: 1.5rem;
     }
-
-    #home__img {
-        max-width: 90%;
-    }
 }
 
 @media screen and (max-width: 480px) {
@@ -501,3 +504,181 @@
     }
 }
 
+
+/* ── ADMIN INFO CARD ── */
+.admin-card {
+    margin-top: 2rem;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(144, 238, 144, 0.35);
+    border-radius: 14px;
+    padding: 20px 28px;
+    display: inline-block;
+    text-align: left;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    animation: fadeSlideIn 0.5s ease-out;
+}
+
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.admin-card .admin-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: lightgreen;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.admin-card .admin-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.admin-card .admin-status {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-card .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: lightgreen;
+    display: inline-block;
+    animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ── LOGOUT BUTTON ── */
+.logout-btn {
+    margin-top: 1.2rem;
+    font-size: 1rem;
+    background: transparent;
+    border: 2px solid orangered;
+    color: orangered;
+    padding: 12px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.logout-btn:hover {
+    background: orangered;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 69, 0, 0.4);
+}
+
+/* ── LOGOUT CONFIRM MODAL ── */
+.logout-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInBg 0.2s ease;
+}
+
+@keyframes fadeInBg {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.logout-box {
+    background: rgb(2, 49, 2);
+    border: 2px solid orangered;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+.logout-box .logout-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.logout-box h3 {
+    color: white;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+}
+
+.logout-box p {
+    color: rgba(255,255,255,0.65);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+
+.logout-box .modal-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-confirm-logout {
+    padding: 12px 28px;
+    background: linear-gradient(to top, darkred, orangered);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-confirm-logout:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255,0,0,0.4);
+}
+
+.btn-cancel-logout {
+    padding: 12px 28px;
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-cancel-logout:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
