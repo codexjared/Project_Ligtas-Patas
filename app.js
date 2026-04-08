@@ -1,5 +1,7 @@
 const menu = document.querySelector('#mobile-menu');
 const menuLinks = document.querySelector('.navbar__menu');
+const safe = document.getElementById('safeadmin');
+
 // Kunin natin ang Login button mula sa iyong Navbar
 const loginBtnNavbar = document.querySelector('#loginBtn'); 
 const adminLoginBtn = document.getElementById('adminLoginBtn');
@@ -13,6 +15,8 @@ menu.addEventListener('click', function() {
 const adminCard = document.getElementById('adminCard');
 const logoutBtn = document.getElementById('logoutBtn');
 
+const currentPage = window.location.pathname;
+
 // Check if admin is logged in
 const isAdmin = localStorage.getItem("isAdminLoggedIn") === "true";
 
@@ -21,11 +25,22 @@ if (isAdmin) {
     if (adminLoginBtn) {
         adminLoginBtn.style.display = 'none';
     }
+    
+    if (safe) {
+        safe.disabled = false;
+        safe.textContent = "Safe ✅";
+    }
 
+    
     // Navbar becomes "Log Out" (visual only)
     if (loginBtnNavbar) {
-        loginBtnNavbar.innerText = "Log out"; 
-        loginBtnNavbar.style.backgroundColor = "#2ecc71"; // green to indicate logged in
+        if (currentPage.includes("main.html")) {
+        loginBtnNavbar.innerText = "Back";
+        loginBtnNavbar.setAttribute("href", "javascript:history.back()");
+        }
+        else {
+            loginBtnNavbar.innerText = "Log Out"; 
+        }
     }
 
     // Show admin-specific elements
@@ -39,12 +54,23 @@ if (isAdmin) {
     });
 } else {
     // If NOT admin
+    if (safe) {
+        safe.disabled = true;
+        safe.textContent = "Safe ✅ (only admin)";
+
+    }
+    
     if (adminCard) adminCard.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'none';
 
     if (loginBtnNavbar) {
-        loginBtnNavbar.innerText = "Log In";
-        loginBtnNavbar.style.backgroundColor = ""; // reset style
+        if (currentPage.includes("main.html")) {
+        loginBtnNavbar.innerText = "Back";
+        loginBtnNavbar.setAttribute("href", "javascript:history.back()");
+        }
+        else {
+            loginBtnNavbar.innerText = "Log In";
+        }
     }
 }
 
