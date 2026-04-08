@@ -21,15 +21,25 @@ code.addEventListener("input", () => {
 let currentpassword = localStorage.getItem("currentpassword") || "ligtaspatas";
 
 subbtn.addEventListener('click', () => {
-    if (code.value !== "0000") {
-        showMessage("Incorrect Code!", "error");
-        code.value = ""; newpass.value = ""; conpass.value = "";
+    if (!code.value || !newpass.value || !conpass.value) {
+        showMessage("The fields cannot be empty.", "error");
         return;
     }
+
+    if (code.value !== "0000") {
+        showMessage("Incorrect Code!", "error");
+        // Clear all fields to force re-entry
+        code.value = "";
+        newpass.value = "";
+        conpass.value = "";
+        return;
+    }
+
     if (newpass.value === "" || conpass.value === "") {
         showMessage("Password fields cannot be empty.", "error");
         return;
     }
+
     if (newpass.value !== conpass.value) {
         showMessage("Passwords do not match. Try again.", "error");
         newpass.value = ""; conpass.value = "";
