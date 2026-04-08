@@ -32,16 +32,16 @@ if (isAdmin) {
     }
 
     
-    // Navbar becomes "Log Out" (visual only)
+    // Navbar button logic
     if (loginBtnNavbar) {
-        if (currentPage.includes("main.html")) {
-        loginBtnNavbar.innerText = "Back";
-        loginBtnNavbar.setAttribute("href", "javascript:history.back()");
-        }
-        else {
-            loginBtnNavbar.innerText = "Log Out"; 
+        if (currentPage.includes("main.html") || currentPage.includes("adminlogin.html")) {
+            loginBtnNavbar.innerText = "Back";
+            loginBtnNavbar.setAttribute("href", "javascript:history.back()");
+        } else {
+            loginBtnNavbar.innerText = "Log Out";
         }
     }
+
 
     // Show admin-specific elements
     if (adminCard) adminCard.style.display = 'inline-block';
@@ -64,11 +64,10 @@ if (isAdmin) {
     if (logoutBtn) logoutBtn.style.display = 'none';
 
     if (loginBtnNavbar) {
-        if (currentPage.includes("main.html")) {
-        loginBtnNavbar.innerText = "Back";
-        loginBtnNavbar.setAttribute("href", "javascript:history.back()");
-        }
-        else {
+        if (currentPage.includes("main.html") || currentPage.includes("adminlogin.html")) {
+            loginBtnNavbar.innerText = "Back";
+            loginBtnNavbar.setAttribute("href", "javascript:history.back()");
+        } else {
             loginBtnNavbar.innerText = "Log In";
         }
     }
