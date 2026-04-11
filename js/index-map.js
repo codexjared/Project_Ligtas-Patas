@@ -1,6 +1,5 @@
 (function () {
     var LS = window.LigtasStorage;
-    // Check if Leaflet (L) and Storage are ready
     if (!LS || typeof L === 'undefined') return;
 
     function getPOIs() { return LS.getPOIs(); }
@@ -24,20 +23,15 @@
         return map[s] || 'badge-unknown';
     }
 
-    // --- Toast System ---
     function showToast(msg) {
         var t = document.getElementById('admin-toast');
-        if (!t) {
-            console.log("Toast message:", msg); // Fallback if element missing
-            return;
-        }
+        if (!t) return;
         t.textContent = msg;
         t.classList.add('show');
         setTimeout(function () { t.classList.remove('show'); }, 2800);
     }
     window.showToast = showToast;
 
-    // --- View Switching Logic ---
     var adminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
 
     if (adminLoggedIn) {
@@ -51,13 +45,12 @@
     }
 
     function initUserMap() {
-        var userMap = L.map('patas-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false});
+        var map = L.map('patas-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false});
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors', maxZoom: 19
-        }).addTo(userMap);
-        
-        userMap.setMaxBounds(L.latLngBounds([13.332701,121.118374],[13.346492,121.123030]).pad(0.05));
-        L.control.zoom({ position: 'bottomright' }).addTo(userMap);
+        }).addTo(map);
+        map.setMaxBounds(L.latLngBounds([13.332701,121.118374],[13.346492,121.123030]).pad(0.05));
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
         
         var legend = L.control({ position: 'bottomleft' });
         legend.onAdd = function () {
@@ -69,15 +62,15 @@
                 '<div><span class="legend-dot" style="background:#64748b"></span>Unknown</div>';
             return div;
         };
-        legend.addTo(userMap);
+        legend.addTo(map);
 
-        var userMarkers = {};
+        var markerMap = {};
         function renderMarkers() {
-            Object.values(userMarkers).forEach(m => userMap.removeLayer(m));
-            userMarkers = {};
+            Object.values(markerMap).forEach(function (m) { map.removeLayer(m); });
+            markerMap = {};
             getPOIs().forEach(function (poi) {
                 var m = L.marker([poi.lat, poi.lng], { icon: makeIcon(poi.status) })
-                    .addTo(userMap)
+                    .addTo(map)
                     .bindPopup(
                         '<div style="min-width:200px;padding:4px">' +
                         '<strong style="font-size:14px">' + poi.name + '</strong><br>' +
@@ -87,7 +80,7 @@
                         '</div>',
                         { maxWidth: 260 }
                     );
-                userMarkers[poi.id] = m;
+                markerMap[poi.id] = m;
             });
         }
         renderMarkers();
@@ -97,21 +90,20 @@
         });
     }
 
-    // --- Admin Global Variables ---
     var adminMap;
-    var adminMarkers = {};
-    var currentPois = [];
+    var markerMap = {};
+    var pois = [];
 
     function initAdminPanel() {
-        currentPois = getPOIs();
+        pois = getPOIs();
+
         adminMap = L.map('admin-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false});
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors', maxZoom: 19
         }).addTo(adminMap);
-        
         adminMap.setMaxBounds(L.latLngBounds([13.332701,121.118374],[13.346492,121.123030]).pad(0.05));
-        L.control.zoom({ position: 'bottomright' }).addTo(adminMap);
 
+        L.control.zoom({ position: 'bottomright' }).addTo(adminMap);
         var list = document.getElementById('admin-poi-list');
         if (list && !list.dataset.pillBound) {
             list.dataset.pillBound = '1';
@@ -122,6 +114,7 @@
                 setStatus(pill.dataset.poiId, pill.dataset.status);
             });
         }
+
         renderAll();
     }
 
@@ -134,7 +127,7 @@
         var list = document.getElementById('admin-poi-list');
         if (!list) return;
         list.innerHTML = '';
-        currentPois.forEach(function (poi) {
+        pois.forEach(function (poi) {
             var card = document.createElement('div');
             card.className = 'poi-card';
             card.id = 'card-' + poi.id;
@@ -146,11 +139,10 @@
                 '<div class="poi-card-name">' + poi.name + '</div>' +
                 '<div class="poi-card-coords">' + poi.lat.toFixed(6) + ', ' + poi.lng.toFixed(6) + '</div>' +
                 '<div class="status-pills">' + pillsHtml + '</div>';
-            
             card.addEventListener('click', function () {
                 adminMap.flyTo([poi.lat, poi.lng], 17, { duration: 0.8 });
-                if (adminMarkers[poi.id]) adminMarkers[poi.id].openPopup();
-                document.querySelectorAll('.poi-card').forEach(c => c.classList.remove('active'));
+                if (markerMap[poi.id]) markerMap[poi.id].openPopup();
+                document.querySelectorAll('.poi-card').forEach(function (c) { c.classList.remove('active'); });
                 card.classList.add('active');
             });
             list.appendChild(card);
@@ -158,9 +150,9 @@
     }
 
     function renderAdminMarkers() {
-        Object.values(adminMarkers).forEach(m => adminMap.removeLayer(m));
-        adminMarkers = {};
-        currentPois.forEach(function (poi) {
+        Object.values(markerMap).forEach(function (m) { adminMap.removeLayer(m); });
+        markerMap = {};
+        pois.forEach(function (poi) {
             var m = L.marker([poi.lat, poi.lng], { icon: makeIcon(poi.status) })
                 .addTo(adminMap)
                 .bindPopup(
@@ -171,14 +163,13 @@
                     '</div>',
                     { maxWidth: 240 }
                 );
-            adminMarkers[poi.id] = m;
+            markerMap[poi.id] = m;
         });
     }
 
     function setStatus(id, status) {
-        var prev = currentPois.find(p => p.id === id);
+        var prev = pois.find(function (p) { return p.id === id; });
         if (!prev || prev.status === status) return;
-        
         if (LS.addZoneEvent) {
             LS.addZoneEvent({
                 id: LS.generateId(),
@@ -193,173 +184,10 @@
                 })
             });
         }
-        currentPois = currentPois.map(p => p.id === id ? Object.assign({}, p, { status: status }) : p);
-        savePOIs(currentPois);
+        pois = pois.map(function (p) { return p.id === id ? Object.assign({}, p, { status: status }) : p; });
+        savePOIs(pois);
         renderAll();
         showToast('Status updated → ' + STATUS_LABEL[status]);
         if (typeof window.renderDashboard === 'function') window.renderDashboard();
     }
 })();
-
-// --- Fallback for showMessage ---
-function showMessage(msg, type) {
-    if (window.showToast) window.showToast(msg);
-    else alert(msg);
-}
-
-// --- Weather Logic (Global Scope) ---
-const weatherState = { user: false, admin: false };
-const weatherAnimIds = { user: null, admin: null };
-
-function toggleWeather(which) {
-    weatherState[which] = !weatherState[which];
-    const btn = document.getElementById(which + '-weather-btn');
-    if (!btn) return;
-
-    if (weatherState[which]) {
-        btn.textContent = '🌧️ Rain ON';
-        btn.style.color = 'lightgreen';
-        btn.style.borderColor = 'lightgreen';
-
-        if (which === 'admin') {
-            showMessage("Heavy Rains Successfully Reported", "warning");
-        } else {
-            if (window.showWeatherWarning) {
-                showWeatherWarning("Heavy Rains mode activated. Visualizing current weather conditions.");
-            }
-        }
-        startWeather(which);
-    } else {
-        btn.textContent = '☀️ Rain OFF';
-        btn.style.color = '#f59e0b';
-        btn.style.borderColor = '#f59e0b';
-        stopWeather(which);
-        showMessage("Heavy Rains Successfully Turned Off", "success");
-    }
-}
-
-function stopWeather(which) {
-    if (weatherAnimIds[which]) cancelAnimationFrame(weatherAnimIds[which]);
-    const canvas = document.getElementById(which + '-weather-canvas');
-    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function createDrops(count, w, h) {
-    return Array.from({ length: count }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        speed: 3.5 + Math.random() * 4,
-        length: 9 + Math.random() * 10,
-        opacity: 0.25 + Math.random() * 0.45,
-        wind: 0.8 + Math.random() * 0.6
-    }));
-}
-
-function createClouds(count, w, isUser = false) {
-    const yOffset = isUser ? 49 : 20;
-    return Array.from({ length: count }, (_, i) => ({
-        x: (i * (w / count)) * 1.5 - 100,
-        y: yOffset + Math.random() * 40,
-        speed: 0.15 + Math.random() * 0.25,
-        puffs: buildPuffs()
-    }));
-}
-
-function buildPuffs() {
-    return [
-        { dx: 0, dy: 0, rx: 55, ry: 28 },
-        { dx: 45, dy: -10, rx: 42, ry: 25 },
-        { dx: -38, dy: -6, rx: 38, ry: 22 },
-        { dx: 80, dy: 5, rx: 35, ry: 20 },
-        { dx: 22, dy: 8, rx: 30, ry: 18 },
-    ];
-}
-
-function drawFrame(ctx, drops, clouds, w, h) {
-    ctx.clearRect(0, 0, w, h);
-    // Draw Rain
-    drops.forEach(drop => {
-        ctx.save();
-        ctx.globalAlpha = drop.opacity;
-        const grad = ctx.createLinearGradient(drop.x, drop.y, drop.x - drop.wind, drop.y + drop.length);
-        grad.addColorStop(0, 'rgba(100,180,255,0)');
-        grad.addColorStop(1, 'rgba(150,150,150,0.8)');
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2.5;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(drop.x, drop.y);
-        ctx.lineTo(drop.x - drop.wind, drop.y + drop.length);
-        ctx.stroke();
-        ctx.restore();
-        drop.y += drop.speed;
-        if (drop.y > h + 20) { drop.y = -20; drop.x = Math.random() * w; }
-    });
-
-    // Draw Clouds
-    clouds.forEach(cloud => {
-        ctx.save();
-        ctx.translate(cloud.x, cloud.y);
-        ctx.shadowColor = 'rgba(0,0,0,0.45)';
-        ctx.shadowBlur = 18;
-        cloud.puffs.forEach(p => {
-            const grad = ctx.createRadialGradient(p.dx, p.dy - 8, 2, p.dx, p.dy, p.rx);
-            grad.addColorStop(0, 'rgba(255,255,255,0.98)');
-            grad.addColorStop(1, 'rgba(210,210,210,0.0)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.ellipse(p.dx, p.dy, p.rx, p.ry, 0, 0, Math.PI * 2);
-            ctx.fill();
-        });
-        ctx.restore();
-        cloud.x += cloud.speed;
-        if (cloud.x > w + 140) cloud.x = -250;
-    });
-}
-
-function startWeather(which) {
-    const canvas = document.getElementById(which + '-weather-canvas');
-    if (!canvas) return;
-    const parent = canvas.parentElement;
-    canvas.width = parent.offsetWidth || 800;
-    canvas.height = parent.offsetHeight || 420;
-    const ctx = canvas.getContext('2d');
-    const drops = createDrops(500, canvas.width, canvas.height);
-    const clouds = createClouds(25, canvas.width, (which === 'user'));
-
-    function loop() {
-        drawFrame(ctx, drops, clouds, canvas.width, canvas.height);
-        weatherAnimIds[which] = requestAnimationFrame(loop);
-    }
-    loop();
-}
-
-// --- Init Logic ---
-window.addEventListener('DOMContentLoaded', () => {
-    const isAdmin = window.isAdmin || (localStorage.getItem('isAdminLoggedIn') === 'true');
-    
-    if (isAdmin) {
-        document.querySelectorAll('.weather-toggle-btn').forEach(btn => {
-            btn.style.display = 'flex';
-        });
-    } else {
-        setTimeout(() => {
-            if (typeof showWeatherWarning === "function") {
-                showWeatherWarning("Warning: Heavy rain is expected in the area. Please stay alert.");
-            }
-        }, 1000);
-    }
-});
-
-function showWeatherWarning(msg) {
-    const modal = document.getElementById('weather-modal');
-    const msgEl = document.getElementById('modal-msg');
-    if (!modal || !msgEl) return;
-    msgEl.textContent = msg;
-    modal.classList.add('show');
-}
-
-function closeModal() {
-    const modal = document.getElementById('weather-modal');
-    if (modal) modal.classList.remove('show');
-}
