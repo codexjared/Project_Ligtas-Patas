@@ -2,38 +2,26 @@ const menu = document.querySelector('#mobile-menu');
 const menuLinks = document.querySelector('.navbar__menu');
 const safe = document.getElementById('safeadmin');
 
-const loginBtnNavbar = document.querySelector('#loginBtn');
+const loginBtnNavbar = document.querySelector('#loginBtn'); 
 const adminLoginBtn = document.getElementById('adminLoginBtn');
-
-if (menu && menuLinks) {
-    menu.addEventListener('click', function () {
-        menu.classList.toggle('is-active');
-        menuLinks.classList.toggle('active');
-    });
-}
-
-// ── ADMIN PANEL & LOGOUT LOGIC ──
 const adminCard = document.getElementById('adminCard');
 const logoutBtn = document.getElementById('logoutBtn');
-
 const currentPage = window.location.pathname;
 
-// Check if admin is logged in
-const isAdmin = localStorage.getItem("isAdminLoggedIn") === "true";
+// ✅ Define isAdmin globally so hotline.js can use it
+window.isAdmin = localStorage.getItem("isAdminLoggedIn") === "true";
 
-if (isAdmin) {
-    // Hide the "Admin Log In" button if already logged in
-    if (adminLoginBtn) {
-        adminLoginBtn.style.display = 'none';
-    }
-    
-    if (safe) {
-        safe.disabled = false;
-        safe.textContent = "Safe ✅";
-    }
+// Navbar toggle
+menu.addEventListener('click', function() {
+    menu.classList.toggle('is-active');
+    menuLinks.classList.toggle('active');
+});
 
-    
-    // Navbar button logic
+// Admin UI logic
+if (window.isAdmin) {
+    if (adminLoginBtn) adminLoginBtn.style.display = 'none';
+    if (safe) { safe.disabled = false; safe.textContent = "Safe ✅"; }
+
     if (loginBtnNavbar) {
         if (currentPage.includes("main.html") || currentPage.includes("adminlogin.html")) {
             loginBtnNavbar.innerText = "Back";
@@ -43,24 +31,10 @@ if (isAdmin) {
         }
     }
 
-
-    // Show admin-specific elements
     if (adminCard) adminCard.style.display = 'inline-block';
     if (logoutBtn) logoutBtn.style.display = 'flex';
-
-    // Enable editable fields (optional)
-    document.querySelectorAll('.editable').forEach(el => {
-        el.contentEditable = "true";
-        el.style.border = "1px dashed #3498db"; // Visual cue for admin
-    });
 } else {
-    // If NOT admin
-    if (safe) {
-        safe.disabled = true;
-        safe.textContent = "Safe ✅ (only admin)";
-
-    }
-    
+    if (safe) { safe.disabled = true; safe.textContent = "Safe ✅ (only admin)"; }
     if (adminCard) adminCard.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'none';
 
@@ -74,7 +48,7 @@ if (isAdmin) {
     }
 }
 
-// Logout functionality
+// Logout modal
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         const overlay = document.createElement('div');
@@ -97,13 +71,7 @@ if (logoutBtn) {
             window.location.reload();
         });
 
-        overlay.querySelector('#cancelLogout').addEventListener('click', () => {
-            overlay.remove();
-        });
-
-        // Close overlay when clicking outside the box
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.remove();
-        });
+        overlay.querySelector('#cancelLogout').addEventListener('click', () => overlay.remove());
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
     });
 }
