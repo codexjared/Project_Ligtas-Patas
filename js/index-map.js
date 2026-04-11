@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════════
+//  PRIVATE MAP MODULE
+// ═══════════════════════════════════════════════
 (function () {
     var LS = window.LigtasStorage;
     if (!LS || typeof L === 'undefined') return;
@@ -23,15 +26,17 @@
         return map[s] || 'badge-unknown';
     }
 
+    // --- Toast ---
     function showToast(msg) {
         var t = document.getElementById('admin-toast');
-        if (!t) return;
+        if (!t) { console.log('Toast:', msg); return; }
         t.textContent = msg;
         t.classList.add('show');
         setTimeout(function () { t.classList.remove('show'); }, 2800);
     }
     window.showToast = showToast;
 
+    // --- View Switching ---
     var adminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
 
     if (adminLoggedIn) {
@@ -44,14 +49,15 @@
         initUserMap();
     }
 
+    // --- User Map ---
     function initUserMap() {
-        var map = L.map('patas-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false});
+        var userMap = L.map('patas-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors', maxZoom: 19
-        }).addTo(map);
-        map.setMaxBounds(L.latLngBounds([13.332701,121.118374],[13.346492,121.123030]).pad(0.05));
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-        
+        }).addTo(userMap);
+        userMap.setMaxBounds(L.latLngBounds([13.332701, 121.118374], [13.346492, 121.123030]).pad(0.05));
+        L.control.zoom({ position: 'bottomright' }).addTo(userMap);
+
         var legend = L.control({ position: 'bottomleft' });
         legend.onAdd = function () {
             var div = L.DomUtil.create('div', 'map-legend');
@@ -62,15 +68,15 @@
                 '<div><span class="legend-dot" style="background:#64748b"></span>Unknown</div>';
             return div;
         };
-        legend.addTo(map);
+        legend.addTo(userMap);
 
-        var markerMap = {};
+        var userMarkers = {};
         function renderMarkers() {
-            Object.values(markerMap).forEach(function (m) { map.removeLayer(m); });
-            markerMap = {};
+            Object.values(userMarkers).forEach(function (m) { userMap.removeLayer(m); });
+            userMarkers = {};
             getPOIs().forEach(function (poi) {
                 var m = L.marker([poi.lat, poi.lng], { icon: makeIcon(poi.status) })
-                    .addTo(map)
+                    .addTo(userMap)
                     .bindPopup(
                         '<div style="min-width:200px;padding:4px">' +
                         '<strong style="font-size:14px">' + poi.name + '</strong><br>' +
@@ -80,7 +86,7 @@
                         '</div>',
                         { maxWidth: 260 }
                     );
-                markerMap[poi.id] = m;
+                userMarkers[poi.id] = m;
             });
         }
         renderMarkers();
@@ -90,20 +96,20 @@
         });
     }
 
+    // --- Admin Map ---
     var adminMap;
-    var markerMap = {};
-    var pois = [];
+    var adminMarkers = {};
+    var currentPois = [];
 
     function initAdminPanel() {
-        pois = getPOIs();
-
-        adminMap = L.map('admin-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false});
+        currentPois = getPOIs();
+        adminMap = L.map('admin-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors', maxZoom: 19
         }).addTo(adminMap);
-        adminMap.setMaxBounds(L.latLngBounds([13.332701,121.118374],[13.346492,121.123030]).pad(0.05));
-
+        adminMap.setMaxBounds(L.latLngBounds([13.332701, 121.118374], [13.346492, 121.123030]).pad(0.05));
         L.control.zoom({ position: 'bottomright' }).addTo(adminMap);
+
         var list = document.getElementById('admin-poi-list');
         if (list && !list.dataset.pillBound) {
             list.dataset.pillBound = '1';
@@ -114,20 +120,16 @@
                 setStatus(pill.dataset.poiId, pill.dataset.status);
             });
         }
-
         renderAll();
     }
 
-    function renderAll() {
-        renderSidebar();
-        renderAdminMarkers();
-    }
+    function renderAll() { renderSidebar(); renderAdminMarkers(); }
 
     function renderSidebar() {
         var list = document.getElementById('admin-poi-list');
         if (!list) return;
         list.innerHTML = '';
-        pois.forEach(function (poi) {
+        currentPois.forEach(function (poi) {
             var card = document.createElement('div');
             card.className = 'poi-card';
             card.id = 'card-' + poi.id;
@@ -141,7 +143,7 @@
                 '<div class="status-pills">' + pillsHtml + '</div>';
             card.addEventListener('click', function () {
                 adminMap.flyTo([poi.lat, poi.lng], 17, { duration: 0.8 });
-                if (markerMap[poi.id]) markerMap[poi.id].openPopup();
+                if (adminMarkers[poi.id]) adminMarkers[poi.id].openPopup();
                 document.querySelectorAll('.poi-card').forEach(function (c) { c.classList.remove('active'); });
                 card.classList.add('active');
             });
@@ -150,9 +152,9 @@
     }
 
     function renderAdminMarkers() {
-        Object.values(markerMap).forEach(function (m) { adminMap.removeLayer(m); });
-        markerMap = {};
-        pois.forEach(function (poi) {
+        Object.values(adminMarkers).forEach(function (m) { adminMap.removeLayer(m); });
+        adminMarkers = {};
+        currentPois.forEach(function (poi) {
             var m = L.marker([poi.lat, poi.lng], { icon: makeIcon(poi.status) })
                 .addTo(adminMap)
                 .bindPopup(
@@ -163,12 +165,12 @@
                     '</div>',
                     { maxWidth: 240 }
                 );
-            markerMap[poi.id] = m;
+            adminMarkers[poi.id] = m;
         });
     }
 
     function setStatus(id, status) {
-        var prev = pois.find(function (p) { return p.id === id; });
+        var prev = currentPois.find(function (p) { return p.id === id; });
         if (!prev || prev.status === status) return;
         if (LS.addZoneEvent) {
             LS.addZoneEvent({
@@ -184,8 +186,10 @@
                 })
             });
         }
-        pois = pois.map(function (p) { return p.id === id ? Object.assign({}, p, { status: status }) : p; });
-        savePOIs(pois);
+        currentPois = currentPois.map(function (p) {
+            return p.id === id ? Object.assign({}, p, { status: status }) : p;
+        });
+        savePOIs(currentPois);
         renderAll();
         showToast('Status updated → ' + STATUS_LABEL[status]);
         if (typeof window.renderDashboard === 'function') window.renderDashboard();
