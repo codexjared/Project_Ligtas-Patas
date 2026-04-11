@@ -33,6 +33,7 @@
     window.showToast = showToast;
 
     var adminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+    window.isAdmin = adminLoggedIn; // Ensure global visibility for weather logic
 
     if (adminLoggedIn) {
         var uv = document.getElementById('user-view');
@@ -64,10 +65,10 @@
         };
         legend.addTo(map);
 
-        var markerMap = {};
+        var uMarkerMap = {};
         function renderMarkers() {
-            Object.values(markerMap).forEach(function (m) { map.removeLayer(m); });
-            markerMap = {};
+            Object.values(uMarkerMap).forEach(function (m) { map.removeLayer(m); });
+            uMarkerMap = {};
             getPOIs().forEach(function (poi) {
                 var m = L.marker([poi.lat, poi.lng], { icon: makeIcon(poi.status) })
                     .addTo(map)
@@ -80,23 +81,21 @@
                         '</div>',
                         { maxWidth: 260 }
                     );
-                markerMap[poi.id] = m;
+                uMarkerMap[poi.id] = m;
             });
         }
         renderMarkers();
-
         window.addEventListener('storage', function (e) {
             if (e.key === LS.POIS_KEY) renderMarkers();
         });
     }
 
     var adminMap;
-    var markerMap = {};
+    var aMarkerMap = {};
     var pois = [];
 
     function initAdminPanel() {
         pois = getPOIs();
-
         adminMap = L.map('admin-map', { center: [13.339777, 121.119899], zoom: 15, zoomControl: false});
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors', maxZoom: 19
@@ -114,7 +113,6 @@
                 setStatus(pill.dataset.poiId, pill.dataset.status);
             });
         }
-
         renderAll();
     }
 
@@ -141,7 +139,7 @@
                 '<div class="status-pills">' + pillsHtml + '</div>';
             card.addEventListener('click', function () {
                 adminMap.flyTo([poi.lat, poi.lng], 17, { duration: 0.8 });
-                if (markerMap[poi.id]) markerMap[poi.id].openPopup();
+                if (aMarkerMap[poi.id]) aMarkerMap[poi.id].openPopup();
                 document.querySelectorAll('.poi-card').forEach(function (c) { c.classList.remove('active'); });
                 card.classList.add('active');
             });
@@ -150,8 +148,8 @@
     }
 
     function renderAdminMarkers() {
-        Object.values(markerMap).forEach(function (m) { adminMap.removeLayer(m); });
-        markerMap = {};
+        Object.values(aMarkerMap).forEach(function (m) { adminMap.removeLayer(m); });
+        aMarkerMap = {};
         pois.forEach(function (poi) {
             var m = L.marker([poi.lat, poi.lng], { icon: makeIcon(poi.status) })
                 .addTo(adminMap)
@@ -163,7 +161,7 @@
                     '</div>',
                     { maxWidth: 240 }
                 );
-            markerMap[poi.id] = m;
+            aMarkerMap[poi.id] = m;
         });
     }
 
@@ -192,218 +190,166 @@
     }
 })();
 
-// ── State Btn Heavy Rain ──
-        const weatherState = { user: true, admin: true };
-        const weatherAnimIds = { user: null, admin: null };
+// ── WEATHER SYSTEM (OUTSIDE IIFE FOR GLOBAL ACCESS) ──
+const weatherState = { user: false, admin: false };
+const weatherAnimIds = { user: null, admin: null };
 
-        function toggleWeather(which) {
+function toggleWeather(which) {
     weatherState[which] = !weatherState[which];
     const btn = document.getElementById(which + '-weather-btn');
+    if(!btn) return;
 
     if (weatherState[which]) {
         btn.textContent = '🌧️ Rain ON';
         btn.style.color = 'lightgreen';
         btn.style.borderColor = 'lightgreen';
 
-        // ── EXECUTION CHECK ──
         if (which === 'admin') {
-            // Toast lang para sa Admin
             if (typeof showMessage === "function") {
                 showMessage("Heavy Rains Successfully Reported", "warning");
             }
         } else {
-            // Warning Modal para sa User
-            // Gagamit tayo ng window check para safe kahit hidden ang function
             if (window.showWeatherWarning) {
                 showWeatherWarning("Heavy Rains mode activated. Visualizing current weather conditions.");
             }
         }
-
-        // Siguraduhin na tatakbo ang animation pagkatapos ng mensahe
         startWeather(which);
-
     } else {
         btn.textContent = '☀️ Rain OFF';
         btn.style.color = '#f59e0b';
         btn.style.borderColor = '#f59e0b';
         stopWeather(which);
-        showMessage("Heavy Rains Successfully Turn Off", "success");
+        if (typeof showMessage === "function") {
+            showMessage("Heavy Rains Successfully Turned Off", "success");
+        }
     }
 }
 
-        function stopWeather(which) {
-            if (weatherAnimIds[which]) cancelAnimationFrame(weatherAnimIds[which]);
-            const canvas = document.getElementById(which + '-weather-canvas');
-            if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-        }
+function startWeather(which) {
+    const canvas = document.getElementById(which + '-weather-canvas');
+    if (!canvas) return;
 
-        // ── Create rain drops ──
-        function createDrops(count, w, h) {
-            return Array.from({ length: count }, () => ({
-                x: Math.random() * w,
-                y: Math.random() * h,   // start within canvas only
-                speed: 3.5 + Math.random() * 4,
-                length: 9 + Math.random() * 10,
-                opacity: 0.25 + Math.random() * 0.45,
-                wind: 0.8 + Math.random() * 0.6
-            }));
-        }
+    const parent = canvas.parentElement;
+    canvas.width = parent.offsetWidth || 800;
+    canvas.height = parent.offsetHeight || 420;
 
-        if (window.isAdmin) {
-            // ── Create clouds ──
-            function createClouds(count, w) {
-            return Array.from({ length: count }, (_, i) => ({
-                x: (i * (w / count)) * 1.5 - 100,
-                y: 20 + Math.random() * 40,
-                speed: 0.15 + Math.random() * 0.25,
-                puffs: buildPuffs()
-            }));
-        }
+    const ctx = canvas.getContext('2d');
+    const drops = createDrops(500, canvas.width, canvas.height);
+    
+    // Cloud offset logic based on user type
+    let cloudYOffset = window.isAdmin ? 20 : 49;
+    const clouds = createClouds(25, canvas.width, cloudYOffset);
 
-        } else {
-            // ── Create clouds ──
-        function createClouds(count, w) {
-            return Array.from({ length: count }, (_, i) => ({
-                x: (i * (w / count)) * 1.5 - 100,
-                y: 49 + Math.random() * 40,
-                speed: 0.15 + Math.random() * 0.25,
-                puffs: buildPuffs()
-            }));
-        }
-        }
+    function loop() {
+        drawFrame(ctx, drops, clouds, canvas.width, canvas.height);
+        weatherAnimIds[which] = requestAnimationFrame(loop);
+    }
+    loop();
+}
 
-        function buildPuffs() {
-            return [
-                { dx:  0,  dy:  0, rx: 55, ry: 28 },
-                { dx: 45,  dy: -10, rx: 42, ry: 25 },
-                { dx: -38, dy: -6,  rx: 38, ry: 22 },
-                { dx: 80,  dy:  5,  rx: 35, ry: 20 },
-                { dx: 22,  dy:  8,  rx: 30, ry: 18 },
-            ];
-        }
+function stopWeather(which) {
+    if (weatherAnimIds[which]) cancelAnimationFrame(weatherAnimIds[which]);
+    const canvas = document.getElementById(which + '-weather-canvas');
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
 
-        // ── Draw one frame ──
-        function drawFrame(ctx, drops, clouds, w, h) {
-            ctx.clearRect(0, 0, w, h);
+function createDrops(count, w, h) {
+    return Array.from({ length: count }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        speed: 3.5 + Math.random() * 4,
+        length: 9 + Math.random() * 10,
+        opacity: 0.25 + Math.random() * 0.45,
+        wind: 0.8 + Math.random() * 0.6
+    }));
+}
 
-            // --- rain streaks (drawn first, so clouds appear on top) ---
-            drops.forEach(drop => {
-                ctx.save();
-                ctx.globalAlpha = drop.opacity;
+function createClouds(count, w, yStart) {
+    return Array.from({ length: count }, (_, i) => ({
+        x: (i * (w / count)) * 1.5 - 100,
+        y: yStart + Math.random() * 40,
+        speed: 0.15 + Math.random() * 0.25,
+        puffs: buildPuffs()
+    }));
+}
 
-                const grad = ctx.createLinearGradient(
-                    drop.x, drop.y,
-                    drop.x - drop.wind, drop.y + drop.length
-                );
-                grad.addColorStop(0,   'rgba(100,180,255,0)');
-                grad.addColorStop(0.4, 'rgba(80,160,255,0.95)');
-                grad.addColorStop(1,   'rgba(150,150,150,0.8)');
+function buildPuffs() {
+    return [
+        { dx: 0, dy: 0, rx: 55, ry: 28 },
+        { dx: 45, dy: -10, rx: 42, ry: 25 },
+        { dx: -38, dy: -6, rx: 38, ry: 22 },
+        { dx: 80, dy: 5, rx: 35, ry: 20 },
+        { dx: 22, dy: 8, rx: 30, ry: 18 },
+    ];
+}
 
-                ctx.strokeStyle = grad;
-                ctx.lineWidth   = 2.5;
-                ctx.lineCap     = 'round';
-                ctx.beginPath();
-                ctx.moveTo(drop.x, drop.y);
-                ctx.lineTo(drop.x - drop.wind, drop.y + drop.length);
-                ctx.stroke();
-                ctx.restore();
+function drawFrame(ctx, drops, clouds, w, h) {
+    ctx.clearRect(0, 0, w, h);
+    drops.forEach(drop => {
+        ctx.save();
+        ctx.globalAlpha = drop.opacity;
+        const grad = ctx.createLinearGradient(drop.x, drop.y, drop.x - drop.wind, drop.y + drop.length);
+        grad.addColorStop(0, 'rgba(100,180,255,0)');
+        grad.addColorStop(0.4, 'rgba(80,160,255,0.95)');
+        grad.addColorStop(1, 'rgba(150,150,150,0.8)');
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(drop.x, drop.y);
+        ctx.lineTo(drop.x - drop.wind, drop.y + drop.length);
+        ctx.stroke();
+        ctx.restore();
+        drop.y += drop.speed;
+        drop.x -= drop.wind * 0.4;
+        if (drop.y > h + 20) { drop.y = -20; drop.x = Math.random() * w; }
+    });
 
-                drop.y += drop.speed;
-                drop.x -= drop.wind * 0.4;
-                if (drop.y > h + 20) {
-                    drop.y = 80;
-                    drop.x = Math.random() * w;
-                }
-                if (drop.x < -10) drop.x = w + 10;
-            });
+    clouds.forEach(cloud => {
+        ctx.save();
+        ctx.translate(cloud.x, cloud.y);
+        ctx.shadowColor = 'rgba(0,0,0,0.45)';
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetY = 10;
+        cloud.puffs.forEach(p => {
+            const grad = ctx.createRadialGradient(p.dx, p.dy - 8, 2, p.dx, p.dy, p.rx);
+            grad.addColorStop(0, 'rgba(255,255,255,0.98)');
+            grad.addColorStop(0.5, 'rgba(235,235,235,0.85)');
+            grad.addColorStop(1, 'rgba(210,210,210,0.0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.ellipse(p.dx, p.dy, p.rx, p.ry, 0, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.restore();
+        cloud.x += cloud.speed;
+        if (cloud.x > w + 140) cloud.x = -250;
+    });
+}
 
-            // --- clouds (drawn on top of rain) ---
-            clouds.forEach(cloud => {
-                ctx.save();
-                ctx.translate(cloud.x, cloud.y);
-
-                ctx.shadowColor    = 'rgba(0,0,0,0.45)';
-                ctx.shadowBlur     = 18;
-                ctx.shadowOffsetY  = 10;
-
-                cloud.puffs.forEach(p => {
-                    const grad = ctx.createRadialGradient(p.dx, p.dy - 8, 2, p.dx, p.dy, p.rx);
-                    grad.addColorStop(0,   'rgba(255,255,255,0.98)');
-                    grad.addColorStop(0.5, 'rgba(235,235,235,0.85)');
-                    grad.addColorStop(1,   'rgba(210,210,210,0.0)');
-                    ctx.fillStyle = grad;
-                    ctx.beginPath();
-                    ctx.ellipse(p.dx, p.dy, p.rx, p.ry, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-
-                ctx.restore();
-                cloud.x += cloud.speed;
-                if (cloud.x > w + 140) {
-                    cloud.x = -250;
-                } 
-            });
-        }
-
-        // ── Start animation for a map ──
-        function startWeather(which) {
-            
-            const canvas = document.getElementById(which + '-weather-canvas');
-            if (!canvas) return;
-
-            const parent = canvas.parentElement;
-            canvas.width  = parent.offsetWidth  || 800;
-            canvas.height = parent.offsetHeight || 420;
-
-            const ctx    = canvas.getContext('2d');
-            const drops  = createDrops(500, canvas.width, canvas.height);
-            const clouds = createClouds(25,  canvas.width);
-
-            function loop() {
-                drawFrame(ctx, drops, clouds, canvas.width, canvas.height);
-                weatherAnimIds[which] = requestAnimationFrame(loop);
-            }
-            loop();
-
-            // Resize handler
-            const ro = new ResizeObserver(() => {
-                canvas.width  = parent.offsetWidth;
-                canvas.height = parent.offsetHeight;
-            });
-            ro.observe(parent);
-        }
-
-        // ── Boot: show admin buttons if admin (window.isAdmin set by app.js) ──
-        if (window.isAdmin) {
-            document.querySelectorAll('.weather-toggle-btn').forEach(btn => {
-                btn.style.display = 'flex';
-            });
-        }
-
-// ILABAS ITO SA ANUMANG IF BLOCK PARA MAGING GLOBAL
 function showWeatherWarning(msg) {
     const modal = document.getElementById('weather-modal');
     const msgEl = document.getElementById('modal-msg');
-    
-    // Safety check: Kung admin, pwedeng wala ang modal HTML sa page
     if (!modal || !msgEl) return; 
-
     if (msg) msgEl.textContent = msg;
     modal.classList.add('show');
 }
 
-// Function para isara ang modal (Fade effect)
 function closeModal() {
     const modal = document.getElementById('weather-modal');
-    modal.classList.remove('show');
+    if(modal) modal.classList.remove('show');
 }
 
-// AUTO POPUP logic
+// ── BOOT ──
 window.addEventListener('DOMContentLoaded', () => {
-    // ── CHECK: Kung hindi admin, saka lang lalabas ang warning ──
-    if (!window.isAdmin) { 
+    // Show buttons if admin
+    if (window.isAdmin) {
+        document.querySelectorAll('.weather-toggle-btn').forEach(btn => {
+            btn.style.display = 'flex';
+        });
+    } else {
+        // Auto popup for users
         setTimeout(() => {
-            // Siguraduhin na existing ang function bago tawagin
             if (typeof showWeatherWarning === "function") {
                 showWeatherWarning("Warning: Heavy rain is expected in the area. Please stay alert and monitor flood levels.");
             }
