@@ -69,7 +69,7 @@
                 <button class="testgen-btn testgen-btn-generate" id="testgen-generate-btn" type="button">Generate Batch</button>
                 <button class="testgen-btn testgen-btn-start" id="testgen-start-btn" type="button">Start Auto</button>
                 <button class="testgen-btn testgen-btn-stop" id="testgen-stop-btn" type="button">Stop Auto</button>
-                <button class="testgen-btn testgen-btn-stop" id="testgen-clear-reports" type="button">Clear Reports</button>
+                <button class="testgen-btn" id="testgen-clear-reports" type="button">Clear Reports</button>
             </div>
             <div class="testgen-status" id="testgen-status">Auto generator: Stopped</div>
         </div>
@@ -79,7 +79,6 @@
 
     <div id="analytics-section">
         <div class="analytics-inner">
-
             <div class="dash-timeline-wrap">
                 <h3 class="dash-section-title dash-section-title--timeline">Activity timeline</h3>
                 <p class="dash-timeline-sub">Reports and map zone updates (newest first).</p>
@@ -150,25 +149,24 @@
         </div>
     </div>
 
-<div id="weather-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-icon">⚠️</div>
-        <h2>Weather Advisory</h2>
-        <p id="modal-msg">Heavy rains are currently affecting the area. Please stay alert and monitor flood levels.</p>
-        <button class="modal-btn" onclick="closeModal()">OKAY</button>
+    <div id="weather-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon">⚠️</div>
+            <h2>Weather Advisory</h2>
+            <p id="modal-msg">Heavy rains are currently affecting the area.</p>
+            <button class="modal-btn" onclick="closeModal()">OKAY</button>
+        </div>
     </div>
-</div>
 
-    <!-- ══ USER VIEW ══ -->
     <div class="home" id="user-view">
         <div class="home__container">
             <div class="home__content">
                 <h1>Ligtas-Patas Flood Monitoring</h1>
             </div>
-            <div class="map-weather-wrap">
+            <div class="map-weather-wrap" style="position: relative;">
                 <div id="patas-map"></div>
                 <canvas class="weather-canvas" id="user-weather-canvas"></canvas>
-                <button class="weather-toggle-btn" id="user-weather-btn" onclick="toggleWeather('user')">
+                <button class="weather-toggle-btn" id="user-weather-btn" onclick="toggleWeather('user')" style="display: none;">
                     🌧️ Rain ON
                 </button>
             </div>
