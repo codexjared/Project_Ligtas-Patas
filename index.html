@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="./css/index-map.css" />
     <link rel="stylesheet" href="./css/messages.css" />
     <link rel="stylesheet" href="css/feedback-system.css">
+    <link rel="stylesheet" href="./css/weather.css">
     <script src="https://kit.fontawesome.com/d65d73018d.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,7 +56,7 @@
     </nav>
 
     <!-- Weather warning banner (shown to public when admin activates) -->
-    <div id="weather-banner" style="display:none; background:#b45309; color:#fff; text-align:center; padding:10px 20px; font-weight:700; font-size:14px; position:relative; z-index:999;">
+    <div id="weather-banner" class="weather-banner">
         <span id="weather-banner-text"></span>
         <span style="margin-left:12px; opacity:.7; font-size:12px;">(issued by Barangay Officials)</span>
     </div>
@@ -65,9 +66,9 @@
             <div class="home__content">
                 <h1>Ligtas-Patas Flood Monitoring</h1>
             </div>
-            <div style="position:relative; width:100%; height:75vh;">
-                <div id="patas-map" style="width:100%; height:100%;"></div>
-                <canvas id="user-weather-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:400;border-radius:10px;"></canvas>
+            <div class="map-wrapper">
+                <div id="patas-map" class="map-fill"></div>
+                <canvas id="user-weather-canvas" class="weather-canvas"></canvas>
             </div>
         </div>
     </div>
@@ -80,23 +81,17 @@
             <div>
                 <div style="position:relative;">
                     <div id="admin-map"></div>
-                    <canvas id="admin-weather-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:400;border-radius:10px;"></canvas>
+                    <canvas id="admin-weather-canvas" class="weather-canvas"></canvas>
                 </div>
-                <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-                    <div style="font-size:11px; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:1px; width:100%; margin-bottom:2px;">⚠️ Emergency Reminder</div>
-                    <button id="btn-heavy-rain" onclick="activateWeather('heavy-rain')"
-                        style="flex:1; padding:10px 16px; border-radius:8px; border:1.5px solid rgba(100,180,255,.5);
-                        background:rgba(100,180,255,.1); color:#7dd3fc; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s;">
+                <div class="weather-controls">
+                    <div class="weather-controls__label">⚠️ Emergency Reminder</div>
+                    <button id="btn-heavy-rain" class="weather-btn weather-btn--rain" onclick="activateWeather('heavy-rain')">
                         🌧️ Upcoming Heavy Rain
                     </button>
-                    <button id="btn-typhoon" onclick="activateWeather('typhoon')"
-                        style="flex:1; padding:10px 16px; border-radius:8px; border:1.5px solid rgba(239,68,68,.5);
-                        background:rgba(239,68,68,.1); color:#fca5a5; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s;">
+                    <button id="btn-typhoon" class="weather-btn weather-btn--typhoon" onclick="activateWeather('typhoon')">
                         🌀 Upcoming Typhoon / Storm
                     </button>
-                    <button id="btn-clear-weather" onclick="activateWeather('clear')"
-                        style="padding:10px 16px; border-radius:8px; border:1.5px solid rgba(34,197,94,.5);
-                        background:rgba(34,197,94,.1); color:#86efac; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s;">
+                    <button id="btn-clear-weather" class="weather-btn weather-btn--clear" onclick="activateWeather('clear')">
                         ☀️ Clear / All Clear
                     </button>
                 </div>
@@ -115,8 +110,6 @@
             <div class="testgen-status" id="testgen-status">Auto generator: Stopped</div>
         </div>
     </div>
-
-    <div id="admin-toast"></div>
 
     <div id="analytics-section">
         <div class="analytics-inner">
