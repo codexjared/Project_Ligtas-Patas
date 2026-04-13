@@ -7,8 +7,6 @@
     var FEEDBACK_KEY   = 'ligtas_feedback';
     var FEEDBACK_EVENTS_KEY = LS.FEEDBACK_EVENTS_KEY;
 
-    var isAdmin = localStorage.getItem('isAdminLoggedIn') === 'true';
-
     var STATUS_ICONS  = { 'Safe': '✅', 'Needs Assistance': '❗', 'Emergency': '⚠️' };
     var STATUS_CLASS  = { 'Safe': 'feed-safe', 'Needs Assistance': 'feed-assist', 'Emergency': 'feed-emergency' };
 
@@ -236,7 +234,7 @@
 
         // Admin toolbar
         var adminHtml = '';
-        if (isAdmin) {
+        if (window.isAdmin) {
             var btnHtml = FEEDBACK_STATES.map(function (f) {
                 var active = feedback === f.key;
                 return '<button type="button"'
@@ -337,7 +335,7 @@
             feed.addEventListener('click', function (e) {
                 // Admin feedback button
                 var fbBtn = e.target.closest('.feed-fb-btn');
-                if (fbBtn && isAdmin) {
+                if (fbBtn && window.isAdmin) {
                     e.stopPropagation();
                     var rid = fbBtn.dataset.rid;
                     var key = fbBtn.dataset.fb;
@@ -379,14 +377,18 @@
     };
 
     // ── Boot ──────────────────────────────────────────────────────────────────────
-    var analytics = document.getElementById('analytics-section');
-    if (analytics) {
-        analytics.style.display = 'block';
-        window.renderDashboard();
-        if (typeof window.initTestGeneratorControls === 'function') {
-            window.initTestGeneratorControls();
-        }
+var analytics = document.getElementById('analytics-section');
+
+if (analytics && window.isAdmin) {
+    analytics.style.display = 'block'; 
+    window.renderDashboard();
+    
+    if (typeof window.initTestGeneratorControls === 'function') {
+        window.initTestGeneratorControls();
     }
+} else if (analytics) {
+    analytics.style.display = 'none';
+}
 
     window.addEventListener('storage', function (e) {
         if (e.key === REPORTS_KEY || e.key === ZONE_EVENTS_KEY || e.key === FEEDBACK_KEY || e.key === FEEDBACK_EVENTS_KEY) {
