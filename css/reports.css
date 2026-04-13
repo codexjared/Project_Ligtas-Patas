@@ -187,15 +187,25 @@ textarea {
     border-left: 6px solid orangered; 
 }
 
+.report-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
 .status-label {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 24px;
+    padding: 0 24px;
+    height: 48px;
+    box-sizing: border-box;
     border-radius: 30px;
     font-weight: 700;
     font-size: 1rem;
-    margin-bottom: 25px;
+    margin-bottom: 0;
     color: var(--dark-green);
     box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
