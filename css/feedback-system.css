@@ -7,13 +7,14 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 22px;
+    padding: 0 24px;
+    height: 48px;
+    box-sizing: border-box;
     border-radius: 30px;
-    font-size: 0.92rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: 0.4px;
-    margin-bottom: 20px;
-    /* tinted glass pill — same pattern as .report-barangay */
+    margin-bottom: 0;
     backdrop-filter: blur(6px);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     animation: fbBadgeIn 0.35s ease-out;
