@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var reportsContainer = document.getElementById('reportsContainer');
     if (!form || !reportsContainer) return;
 
-    var isAdmin = localStorage.getItem('isAdminLoggedIn') === 'true';
-
     // ── Admin feedback states ─────────────────────────────────────────────────
     var FEEDBACK_STATES = [
         { key: 'verified',    label: 'Verified',    icon: '🔍', color: '#60b4ff' },
@@ -136,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // ── admin action toolbar (only built for admins) ──
         var adminToolbarHtml = '';
-        if (isAdmin) {
+        if (window.isAdmin) {
             var btnHtml = FEEDBACK_STATES.map(function (f) {
                 var active = feedback === f.key;
                 return '<button type="button"'
@@ -159,8 +157,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         card.innerHTML =
-            '<div class="status-label">' + r.status + '</div>'
+            '<div class="report-card-top">'
+            + '<div class="status-label">' + r.status + '</div>'
             + badgeHtml
+            + '</div>'
             + '<div class="report-header">'
             +   '<div class="report-name">' + r.name + '</div>'
             +   '<div class="report-barangay">' + r.barangay + '</div>'
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Feedback (admin only — buttons only exist for admins)
-        if (!isAdmin) return;
+        if (!window.isAdmin) return;
         var fbBtn = e.target.closest('.fb-btn');
         if (!fbBtn) return;
         var card = fbBtn.closest('.report-card');
