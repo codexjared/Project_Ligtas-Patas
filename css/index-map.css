@@ -73,14 +73,14 @@
             border: 1px solid rgba(255,255,255,0.15);
         }
 
-        #admin-toast {
+        /* #admin-toast {
             position: fixed; top: 24px; right: 24px; z-index: 5000;
             background: lightgreen; color: rgb(2,49,2);
             font-weight: 700; font-size: 13px;
             padding: 10px 18px; border-radius: 8px;
             transform: translateY(-80px); opacity: 0; transition: all .3s;
         }
-        #admin-toast.show { transform: translateY(0); opacity: 1; }
+        #admin-toast.show { transform: translateY(0); opacity: 1; } */
 
         .testgen-card {
             max-width: 1200px;
@@ -111,17 +111,37 @@
             padding: 8px 10px;
         }
         .testgen-btn {
-            border: 0;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity .2s;
-        }
-        .testgen-btn:hover { opacity: 0.9; }
-        .testgen-btn-generate { background: #22c55e; color: rgb(2,49,2); }
-        .testgen-btn-start { background: #f59e0b; color: #222; }
-        .testgen-btn-stop { background: #ef4444; color: white; }
+    border: 0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.testgen-btn-generate { background: #22c55e; color: rgb(2,49,2); }
+.testgen-btn-generate:hover {
+    background: #16a34a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+.testgen-btn-generate:active { transform: translateY(0); box-shadow: none; }
+
+.testgen-btn-start { background: #f59e0b; color: #222; }
+.testgen-btn-start:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+.testgen-btn-start:active { transform: translateY(0); box-shadow: none; }
+
+.testgen-btn-stop { background: #ef4444; color: white; }
+.testgen-btn-stop:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+.testgen-btn-stop:active { transform: translateY(0); box-shadow: none; }
         .testgen-status {
             margin-top: 8px;
             font-size: 12px;
@@ -211,3 +231,4 @@
     margin: 0 auto;
     padding: 0 30px;
 }
+
