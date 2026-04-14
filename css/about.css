@@ -331,12 +331,12 @@ body {
     margin-top: 10px;
 }
 
-/* --- MOBILE RESPONSIVENESS (PHONES) --- */
 @media screen and (max-width: 768px) {
     .hero-section {
         height: auto; 
         min-height: 100vh;
-        overflow-y: auto; 
+        overflow-y: auto;
+        overflow-x: hidden !important;
         padding-top: 15px; 
         padding-bottom: 80px; 
     }
