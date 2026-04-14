@@ -345,9 +345,10 @@ body {
     }
     
     .hotline-container{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100% !important;
         gap: 25px;
     }
     .hotline-left {
