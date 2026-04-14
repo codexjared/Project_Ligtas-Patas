@@ -344,7 +344,7 @@ body {
         width: 45px;            
     }
     .hotline-container{
-        flex-direction: column-reverse;
+        flex-direction: column;
         padding: 20px;
         gap: 20px;
         text-align: center;
