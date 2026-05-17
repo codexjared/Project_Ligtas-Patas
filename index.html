@@ -115,7 +115,24 @@
         <div class="analytics-inner">
 
             <div class="dash-timeline-wrap">
-                <h3 class="dash-section-title dash-section-title--timeline">Activity timeline</h3>
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <h3 class="dash-section-title dash-section-title--timeline" style="margin:0;">Activity timeline</h3>
+                    <button
+                        class="testgen-btn testgen-btn-stop"
+                        type="button"
+                        onclick="(function(){
+						localStorage.setItem('ligtas_feedback', '');
+						localStorage.setItem('ligtas_feedback_events', '');
+						//localStorage.setItem('ligtas_patas_pois', '');
+						//localStorage.setItem('ligtas_reports', '');
+						localStorage.setItem('ligtas_zone_events', '');
+                            var tbody = document.getElementById('activity-timeline-tbody');
+								tbody.innerHTML = '<tr><td colspan=3 class=dash-empty-row>No activity yet.</td></tr>';
+								if (window.activityLog) window.activityLog.length = 0;
+                        })()"
+                        style="margin-bottom:2px;"
+                    >Clear Timeline</button>
+                </div>
                 <p class="dash-timeline-sub">Reports and map zone updates (newest first).</p>
                 <div class="dash-table-wrap dash-timeline-scroll">
                     <table class="dash-table dash-timeline-table">
